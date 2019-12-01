@@ -6,18 +6,15 @@ export class HexxagonGame {
 
     fields: Field[] = [];
 
-    constructor(private size = 4) {
-        // this.fields.push(new Field(new Coordinates(0, -1), FieldValue.EMPTY));
-        // this.fields.push(new Field(new Coordinates(0, 0), FieldValue.EMPTY));
-        // this.fields.push(new Field(new Coordinates(0, 1), FieldValue.EMPTY));
-        // this.fields.push(new Field(new Coordinates(-1, 0), FieldValue.EMPTY));
-        // this.fields.push(new Field(new Coordinates(-1, 1), FieldValue.EMPTY));
-        // this.fields.push(new Field(new Coordinates(1, -1), FieldValue.EMPTY));
-        // this.fields.push(new Field(new Coordinates(1, 0), FieldValue.EMPTY));
+    selectedField: null | Field = null;
+    playerMoving: FieldValue;
+
+    constructor(private size = 5) {
         const centerHex = new Coordinates(0, 0);
+        this.playerMoving = FieldValue.PLAYER_1;
         for (let x = -size; x <= size; x++) {
             for (let y = -size; y <= size; y++) {
-                const createdCoords:Coordinates = new Coordinates(x, y);
+                const createdCoords: Coordinates = new Coordinates(x, y);
                 if ((createdCoords.distanceTo(centerHex) <= size)) {
                     this.fields.push(new Field(createdCoords, FieldValue.EMPTY));
                 }
@@ -29,6 +26,11 @@ export class HexxagonGame {
         this.set(FieldValue.PLAYER_2, new Coordinates(-size, 0));
         this.set(FieldValue.PLAYER_2, new Coordinates(0, size));
         this.set(FieldValue.PLAYER_2, new Coordinates(size, -size));
+
+        this.set(FieldValue.NOT_USABLE, new Coordinates(0, 2));
+        this.set(FieldValue.NOT_USABLE, new Coordinates(-2, 0));
+        this.set(FieldValue.NOT_USABLE, new Coordinates(2, -2));
+
     }
 
     set(player: FieldValue, coordinates: Coordinates) {
@@ -68,6 +70,30 @@ export class HexxagonGame {
         return this.fields.filter(f => {
             return coordinates.distanceTo(f) <= distance && f.fieldValue === FieldValue.EMPTY;
         })
+    }
+
+    moveToMarked(target: Field) {
+        if (this.selectedField != null && target.marked > 0) {
+            this.fields.forEach(f => f.marked = 0);
+            this.move(this.selectedField, target);
+            this.selectedField = null;
+            this.playerMoving = this.playerMoving === FieldValue.PLAYER_1 ? FieldValue.PLAYER_2 : FieldValue.PLAYER_1;
+        }
+    }
+
+    markMoveOptionsForField(field: Field) {
+        if (field.fieldValue === this.playerMoving) {
+            this.selectedField = field;
+            this.fields.forEach(f => {
+                let distance = field.distanceTo(f);
+                f.marked = 0;
+                if (f.fieldValue === FieldValue.EMPTY) {
+                    if (distance === 1 || distance === 2) {
+                        f.marked = distance;
+                    }
+                }
+            });
+        }
     }
 
     markAround(field: Field) {

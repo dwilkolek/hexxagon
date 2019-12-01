@@ -4,6 +4,8 @@ export class Field extends Coordinates {
 
     id: string;
 
+    marked: number = 0;
+
     constructor(_coordinates: Coordinates, private _value: FieldValue) {
         super(_coordinates.x, _coordinates.y);
         this.id = `(${this.x};${this.z};${this.y})`;
