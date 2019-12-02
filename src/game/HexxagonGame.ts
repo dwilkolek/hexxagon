@@ -27,9 +27,9 @@ export class HexxagonGame {
         this.set(FieldValue.PLAYER_2, new Coordinates(0, size));
         this.set(FieldValue.PLAYER_2, new Coordinates(size, -size));
 
-        this.set(FieldValue.NOT_USABLE, new Coordinates(0, 2));
-        this.set(FieldValue.NOT_USABLE, new Coordinates(-2, 0));
-        this.set(FieldValue.NOT_USABLE, new Coordinates(2, -2));
+        this.set(FieldValue.NOT_USABLE, new Coordinates(0, 1));
+        this.set(FieldValue.NOT_USABLE, new Coordinates(-1, 0));
+        this.set(FieldValue.NOT_USABLE, new Coordinates(1, -1));
 
     }
 
@@ -52,7 +52,7 @@ export class HexxagonGame {
         } else {
             throw new Error(`too far away ${from} to ${to}`);
         }
-        this.markAround(to);
+        this.takeOverNeighbours(to);
     }
 
     getField(coordinates: Coordinates) {
@@ -72,12 +72,16 @@ export class HexxagonGame {
         })
     }
 
-    moveToMarked(target: Field) {
+    swapPlayerMoving() {
+        this.playerMoving = this.playerMoving === FieldValue.PLAYER_1 ? FieldValue.PLAYER_2 : FieldValue.PLAYER_1;
+    }
+
+    async moveToMarked(target: Field) {
         if (this.selectedField != null && target.marked > 0) {
             this.fields.forEach(f => f.marked = 0);
             this.move(this.selectedField, target);
             this.selectedField = null;
-            this.playerMoving = this.playerMoving === FieldValue.PLAYER_1 ? FieldValue.PLAYER_2 : FieldValue.PLAYER_1;
+            this.swapPlayerMoving();
         }
     }
 
@@ -96,7 +100,7 @@ export class HexxagonGame {
         }
     }
 
-    markAround(field: Field) {
+    takeOverNeighbours(field: Field) {
         this.fields = this.fields.map(f => {
             if (field.distanceTo(f) === 1 && f.fieldValue !== FieldValue.EMPTY
                 && (f.fieldValue === (field.fieldValue === FieldValue.PLAYER_1 ? FieldValue.PLAYER_2 : FieldValue.PLAYER_1))) {
@@ -106,26 +110,40 @@ export class HexxagonGame {
         })
     }
 
-    // getMapStats() {
-    //     const stats = {};
-    //     stats[FieldValue.EMPTY] = 0;
-    //     stats[FieldValue.NOT_USABLE] = 0;
-    //     stats[FieldValue.PLAYER_1] = 0;
-    //     stats[FieldValue.PLAYER_2] = 0;
-    //     this.fields.forEach(f => {
-    //         stats[f.value]++;
-    //     });
-    //     return stats;
-    // }
 
-    // getMapInput(player) {
-    //     return [player].concat(...this.fields.map(field => [
-    //         field.x,
-    //         field.y,
-    //         field.value
-    //     ]).flatMap(l => l))
-    // }
+    async makeCPUMove() {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const opts = this.fields.filter(field => field.fieldValue === this.playerMoving && this.getMoveOptions(field, 2).length > 0);
+                const chosenGem = Math.round(Math.random() * (opts.length - 1));
+                const moveOptions = this.getMoveOptions(opts[chosenGem], 2)
+                const chosenMove = Math.round(Math.random() * (moveOptions.length - 1));
+                this.move(opts[chosenGem], moveOptions[chosenMove]);
+                this.swapPlayerMoving();
+                resolve();
+            }, Math.random() * 3 * 1000);
+        })
 
+    }
+
+    isGameFinished() {
+        const p1 = this.fields.filter(f => f.fieldValue === FieldValue.PLAYER_1).length;
+        const p2 = this.fields.filter(f => f.fieldValue === FieldValue.PLAYER_2).length;
+        const empty = this.fields.filter(f => f.fieldValue === FieldValue.EMPTY).length;
+
+        if (empty === 0 || p1 === 0 || p2 ===0) {
+            return true;
+        }
+    }
+    getPoints() {
+        const p1 = this.fields.filter(f => f.fieldValue === FieldValue.PLAYER_1).length;
+        const p2 = this.fields.filter(f => f.fieldValue === FieldValue.PLAYER_2).length;
+        return {
+            1: p1,
+            2: p2,
+            winner: p1 === p2 ? null : (p1 > p2 ? FieldValue.PLAYER_1 : FieldValue.PLAYER_2)
+        }
+    }
 }
 
 

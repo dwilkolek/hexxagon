@@ -1,9 +1,9 @@
 <template>
-  <g>
+  <g v-bind:class="{'enabled': field.marked > 0 || playerMoving == field.fieldValue}">
     <polygon
       v-bind:data-x="field.x"
       v-bind:data-y="field.y"
-      v-bind:points="field.svgPolygon(15, 300, 300)"
+      v-bind:points="field.svgPolygon(fieldSize, offsetSize, offsetSize)"
       v-bind:class="{ 'not-exsiting-field': field.fieldValue===-1, 'distance1': field.marked===1, 'distance2': field.marked===2}"
       fill="none"
       stroke="black"
@@ -11,35 +11,50 @@
     <circle
       v-if="field.fieldValue > 0"
       v-bind:class="{ 'player1': field.fieldValue===1, 'player2': field.fieldValue===2 }"
-      v-bind:cx="field.cx(15, 300, 300)"
-      v-bind:cy="field.cy(15, 300, 300)"
+      v-bind:cx="field.cx(fieldSize, offsetSize, offsetSize)"
+      v-bind:cy="field.cy(fieldSize, offsetSize, offsetSize)"
       r="15"
     ></circle>
-    <text text-anchor="middle" style="font-size: 0.5em;" v-bind:x="field.cx(15, 300, 300)"
-      v-bind:y="field.cy(15, 300, 300)">
-    x: {{field.x}}, z: {{field.z}}
-    </text>
   </g>
 </template>
 
 <script>
 export default {
-  props: ["field"]
+  props: ["field", "size", "playerMoving"],
+  data() {
+    return {
+      fieldSize: this.size / 6,
+      offsetSize: this.size
+    };
+  },
+  watch: {
+    size: function(newVal, oldVal) {
+      this.fieldSize = newVal / 40;
+      this.offsetSize = newVal / 2;
+    }
+  }
 };
 </script>
 
 <style>
+polygon {
+  fill: rgb(230, 230, 230);
+}
+
+.enabled {
+  cursor: pointer;
+}
 .distance1 {
-    stroke: yellow;
-    z-index: 1000;
+  stroke: yellow;
+  z-index: 1000;
 }
 
 .distance2 {
-    stroke: orange;
-    z-index: 1000;
+  stroke: orange;
+  z-index: 1000;
 }
 .not-exsiting-field {
-    fill: #000;
+  fill: rgb(59, 0, 65);
 }
 .player1 {
   fill: #f00;

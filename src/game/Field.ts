@@ -38,8 +38,8 @@ export class Field extends Coordinates {
         return y + ofy;
     }
     svgPolygon(size: number, ofx: number, ofy: number) {
-        const w = this.w(size);
-        const h = this.h(size);
+        const w = this.w(0.94*size);
+        const h = this.h(0.94 * size);
         const y = this.cy(size, ofy);
         const x = this.cx(size, ofx);
 

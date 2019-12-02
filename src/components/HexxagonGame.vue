@@ -1,9 +1,18 @@
 <template>
   <section>
     <h1>Hexxagon {{game.fields.length}}</h1>
-    <svg width="600" height="600">
-      <HexField v-on:click.native="move(field)" v-for="field in game.fields" v-bind:key="field.id" v-bind:field="field" />
-    </svg>
+    <div id="game">
+      <svg height="100%" width="100%">
+        <HexField
+          v-on:click.native="move(field)"
+          v-for="field in game.fields"
+          v-bind:key="field.id"
+          v-bind:field="field"
+          v-bind:size="size"
+          v-bind:playerMoving="playerMoving"
+        />
+      </svg>
+    </div>
   </section>
 </template>
 
@@ -16,21 +25,66 @@ export default {
     HexField
   },
   data() {
+    let game = new HexxagonGame();
     return {
-      game: new HexxagonGame(5)
+      game,
+      size: 300,
+      playerMoving: game.playerMoving,
+      movingEnabled: true
     };
   },
   methods: {
-    move(field) {
-      if (this.game.selectedField && field.marked) {
-        this.game.moveToMarked(field);
-      } else {
-        this.game.markMoveOptionsForField(field);
+    async move(field) {
+      if (this.movingEnabled) {
+        this.movingEnabled = false;
+        if (this.game.selectedField && field.marked) {
+          await this.game.moveToMarked(field);
+          if (!this.game.isGameFinished()) {
+            await this.game.makeCPUMove();
+            this.movingEnabled = true;
+          }
+          if (this.game.isGameFinished()) {
+            setTimeout(() => {
+              const points = this.game.getPoints();
+              alert(
+                `Game is finished. ${
+                  points.winner == null ? "DRAW!" : "PLAYER " + points.winner
+                } WINS!`
+              );
+              this.game = new HexxagonGame();
+            }, 1000);
+          }
+        } else {
+          this.game.markMoveOptionsForField(field);
+          this.movingEnabled = true;
+        }
       }
+    },
+    resize() {
+      this.size = document.getElementById("game").offsetWidth;
     }
+  },
+  mounted() {
+    this.$nextTick(function() {
+      window.addEventListener("resize", this.resize);
+
+      //Init
+      this.resize();
+    });
+  },
+  beforeDestroy() {
+    window.removeEventListener("resize", this.resize);
   }
 };
 </script>
 
 <style>
+#game {
+  margin: 0 auto;
+  height: 80vw;
+  width: 80vw;
+  max-height: 80vh;
+  max-width: 80vh;
+  background: #444;
+}
 </style>
