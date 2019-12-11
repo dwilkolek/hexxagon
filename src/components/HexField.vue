@@ -54,7 +54,7 @@ polygon {
   z-index: 1000;
 }
 .not-exsiting-field {
-  fill: rgb(59, 0, 65);
+  fill: #000;
 }
 .player1 {
   fill: #f00;

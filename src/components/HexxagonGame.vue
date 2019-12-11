@@ -1,6 +1,6 @@
 <template>
   <section>
-    <h1>Hexxagon {{game.fields.length}}</h1>
+    <h1>Hexxagon</h1>
     <div id="game">
       <svg height="100%" width="100%">
         <HexField
@@ -52,6 +52,7 @@ export default {
                 } WINS!`
               );
               this.game = new HexxagonGame();
+              this.movingEnabled = true;
             }, 1000);
           }
         } else {
@@ -79,12 +80,16 @@ export default {
 </script>
 
 <style>
+h1 {
+  color: #ffffff;
+  text-shadow: 3px 3px #000000;
+}
 #game {
   margin: 0 auto;
   height: 80vw;
   width: 80vw;
   max-height: 80vh;
   max-width: 80vh;
-  background: #444;
+  background: #222222;
 }
 </style>
