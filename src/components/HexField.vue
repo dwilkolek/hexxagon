@@ -13,7 +13,7 @@
       v-bind:class="{ 'player1': field.fieldValue===1, 'player2': field.fieldValue===2 }"
       v-bind:cx="field.cx(fieldSize, offsetSize, offsetSize)"
       v-bind:cy="field.cy(fieldSize, offsetSize, offsetSize)"
-      r="15"
+      v-bind:r="fieldSize"
     ></circle>
   </g>
 </template>
